@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Harry Potter ✦ Magic World</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Cinzel',serif;min-height:100vh;overflow-x:hidden;cursor:none}
+#bg-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+
+/* ── Intro ── */
+#intro{position:fixed;inset:0;z-index:9500;background:#000;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.intro-orb{width:12px;height:12px;border-radius:50%;background:var(--accent,#ffe080);box-shadow:0 0 30px 15px var(--accent,#f0c040);animation:orb-blast 1.6s cubic-bezier(.15,0,.1,1) forwards .2s;opacity:0}
+@keyframes orb-blast{0%{opacity:1;transform:scale(1)}40%{transform:scale(80);opacity:.7}75%{transform:scale(400);opacity:.3}100%{transform:scale(2000);opacity:0}}
+#intro.done{display:none}
+
+/* ── Cursor (SVG wand) ── */
+#cursor{position:fixed;pointer-events:none;z-index:9999;transform:translate(-4px,-28px) rotate(-20deg);transition:transform .1s;color:var(--accent,#ffe080);filter:drop-shadow(0 0 6px var(--glow,rgba(240,192,64,.8)))}
+
+/* ── Transition overlay ── */
+#tov{position:fixed;inset:0;z-index:900;pointer-events:none;clip-path:circle(0% at 50% 50%)}
+
+/* ── Main content ── */
+#main{position:relative;z-index:10;max-width:900px;margin:0 auto;padding:52px 24px 40px;text-align:center}
+#main.out{opacity:0;transform:scale(.96) translateY(10px);transition:opacity .3s,transform .3s}
+
+/* stagger-in: children animate in sequence */
+#main.in .s-icon,#main.in h1,#main.in .s-loc,#main.in .subtitle,
+#main.in .card,#main.in .spell-box,#main.in .hint{opacity:0;animation:stag .55s cubic-bezier(.2,0,.2,1) forwards}
+#main.in .s-icon{animation-delay:.02s}
+#main.in h1{animation-delay:.1s}
+#main.in .s-loc{animation-delay:.16s}
+#main.in .subtitle{animation-delay:.22s}
+#main.in .card:nth-child(1){animation-delay:.32s}
+#main.in .card:nth-child(2){animation-delay:.42s}
+#main.in .card:nth-child(3){animation-delay:.52s}
+#main.in .card:nth-child(4){animation-delay:.62s}
+#main.in .spell-box{animation-delay:.74s}
+#main.in .hint{animation-delay:.88s}
+@keyframes stag{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Scene header ── */
+.s-icon{display:block;margin-bottom:8px;animation:icon-pulse 3s ease-in-out infinite}
+.s-icon svg{width:72px;height:72px;color:var(--accent);filter:drop-shadow(0 0 16px var(--glow))}
+@keyframes icon-pulse{0%,100%{filter:drop-shadow(0 0 14px var(--glow))}50%{filter:drop-shadow(0 0 32px var(--glow)) drop-shadow(0 0 60px var(--glow))}}
+h1{font-family:'Cinzel Decorative',cursive;font-size:clamp(1.9rem,5.5vw,3.8rem);background:linear-gradient(135deg,var(--accent-light),var(--accent),var(--accent-dark),var(--accent),var(--accent-light));background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite;letter-spacing:.06em;line-height:1.2}
+@keyframes shimmer{to{background-position:200% center}}
+.s-loc{font-size:.66rem;letter-spacing:.48em;color:var(--muted);margin:10px 0 4px;text-transform:uppercase}
+.subtitle{font-size:.9rem;letter-spacing:.3em;color:var(--muted);margin:10px 0 32px}
+
+/* ── Divider ── */
+.div{display:flex;align-items:center;gap:14px;margin:22px 0;opacity:.45}
+.div-line{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--accent),transparent)}
+.div-gem{font-size:16px;animation:spin-g 8s linear infinite}
+@keyframes spin-g{to{transform:rotate(360deg)}}
+
+/* ── Cards ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:28px 0}
+.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:24px 16px;transition:transform .3s,box-shadow .3s,border-color .3s;cursor:none}
+.card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 18px 48px var(--card-shadow);border-color:var(--accent)}
+.card-icon{display:block;margin-bottom:10px}
+.card-icon svg{width:36px;height:36px;color:var(--accent);opacity:.85}
+.card h3{font-size:.9rem;color:var(--accent);margin-bottom:7px;letter-spacing:.07em}
+.card p{font-size:.78rem;color:var(--text-dim);line-height:1.7;font-family:sans-serif}
+
+/* ── Spell box ── */
+.spell-box{margin:28px 0;padding:28px 20px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:18px}
+.spell-label{font-size:.62rem;letter-spacing:.42em;color:var(--muted);margin-bottom:11px}
+.spell-text{font-family:'Cinzel Decorative',cursive;font-size:clamp(1.1rem,3.2vw,1.8rem);color:var(--accent-light);text-shadow:0 0 24px var(--glow)}
+
+/* ── Hint ── */
+.hint{margin-top:40px;font-size:.68rem;color:var(--muted);letter-spacing:.3em;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:.95}}
+
+/* ── Nav dots ── */
+#nav{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:200;display:flex;flex-direction:column;gap:9px}
+.nd{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);cursor:none;transition:all .3s;position:relative}
+.nd.on{background:var(--accent);box-shadow:0 0 10px var(--glow);transform:scale(1.5)}
+.nd-lbl{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:.58rem;white-space:nowrap;color:var(--accent);opacity:0;transition:opacity .2s;font-family:'Cinzel',serif;letter-spacing:.07em;pointer-events:none}
+#nav:hover .nd-lbl{opacity:1}
+
+/* ── Counter ── */
+#ctr{position:fixed;left:18px;bottom:18px;z-index:200;font-size:.58rem;letter-spacing:.26em;color:var(--muted);opacity:.5}
+footer{margin-top:48px;padding:16px;border-top:1px solid var(--card-border);font-size:.68rem;color:var(--muted);letter-spacing:.16em;opacity:.45}
+
+/* ── Click FX ── */
+.particle{position:fixed;pointer-events:none;z-index:8888;border-radius:50%;mix-blend-mode:screen;animation:pfx var(--d) ease-out forwards}
+@keyframes pfx{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--x),var(--y)) scale(0);opacity:0}}
+.mring{position:fixed;pointer-events:none;z-index:8887;border-radius:50%;animation:rfx var(--d,.65s) ease-out forwards}
+@keyframes rfx{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.sfloat{position:fixed;pointer-events:none;z-index:8889;font-family:'Cinzel Decorative',cursive;font-size:.8rem;animation:sfx 1.3s ease-out forwards;white-space:nowrap}
+@keyframes sfx{0%{transform:translate(-50%,-6px);opacity:1}100%{transform:translate(-50%,-64px);opacity:0}}
+.spark{position:fixed;pointer-events:none;z-index:8890;animation:pfx var(--d) ease-out forwards}
+
+/* energy flash at click */
+.eflash{position:fixed;pointer-events:none;z-index:8999;border-radius:50%;animation:eblast .5s ease-out forwards}
+@keyframes eblast{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(-50%,-50%) scale(60);opacity:0}}
+
+/* portal ring during transition */
+.pring{position:fixed;pointer-events:none;z-index:8998;border-radius:50%;animation:pspin .9s ease-out forwards}
+@keyframes pspin{0%{transform:translate(-50%,-50%) scale(0) rotate(0deg);opacity:1}60%{transform:translate(-50%,-50%) scale(1) rotate(200deg);opacity:1}100%{transform:translate(-50%,-50%) scale(1.8) rotate(360deg);opacity:0}}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="cursor">
+  <svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-linecap="round">
+    <line x1="28" y1="4" x2="6" y2="26" stroke-width="3"/>
+    <circle cx="28" cy="4" r="3.5" fill="currentColor" stroke="none"/>
+    <line x1="28" y1="0" x2="28" y2="3" stroke-width="1.5"/>
+    <line x1="31" y1="4" x2="34" y2="4" stroke-width="1.5"/>
+    <line x1="30.5" y1="1.5" x2="32.5" y2="-0.5" stroke-width="1.5"/>
+  </svg>
+</div>
+
+<div id="intro"><div class="intro-orb"></div></div>
+<div id="tov"></div>
+<div id="main"></div>
+<div id="nav"></div>
+<div id="ctr"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  SVG ICONS
+// ══════════════════════════════════════════
+const IC = {
+  // Hero icons
+  lightning:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="27,3 9,27 21,27 13,45 41,21 29,21" fill="currentColor" opacity=".85"/></svg>`,
+  forest:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="24,4 8,28 18,28 6,44 42,44 30,28 40,28"/><rect x="21" y="44" width="6" height="4" rx="1" fill="currentColor"/></svg>`,
+  broom:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="36" y2="36"/><path d="M33 33 C35 27 46 27 46 36 C46 45 33 47 28 47 C25 43 30 36 33 33Z" fill="currentColor" opacity=".7"/><circle cx="8" cy="8" r="4" fill="currentColor"/></svg>`,
+  serpent:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 38 C6 20 14 6 26 6 C38 6 44 16 44 26 C44 34 38 40 30 40 C22 40 18 34 20 28 C22 22 28 20 32 24"/><polygon points="30,18 37,26 27,26" fill="currentColor"/></svg>`,
+  lantern:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="24" y1="2" x2="24" y2="10"/><path d="M12 10 H36 L40 42 H8 Z"/><line x1="8" y1="18" x2="40" y2="18"/><line x1="8" y1="34" x2="40" y2="34"/><line x1="12" y1="10" x2="8" y2="18"/><line x1="36" y1="10" x2="40" y2="18"/><circle cx="24" cy="26" r="6" fill="currentColor" opacity=".55"/></svg>`,
+  chains:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="14" cy="18" r="9"/><circle cx="34" cy="30" r="9"/><line x1="23" y1="18" x2="25" y2="30" stroke-linecap="round"/><line x1="14" y1="9" x2="14" y2="3" stroke-linecap="round"/><line x1="34" y1="39" x2="34" y2="45" stroke-linecap="round"/></svg>`,
+
+  // Card icons
+  castle:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="16" width="26" height="14" rx="1"/><rect x="3" y="10" width="6" height="8"/><rect x="13" y="8" width="6" height="10"/><rect x="23" y="10" width="6" height="8"/><line x1="4" y1="10" x2="4" y2="8"/><line x1="7" y1="10" x2="7" y2="8"/><line x1="24" y1="10" x2="24" y2="8"/><line x1="27" y1="10" x2="27" y2="8"/><rect x="13" y="22" width="6" height="8"/></svg>`,
+  owl:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="16" cy="19" rx="9" ry="11"/><ellipse cx="12" cy="14" rx="3.5" ry="4"/><ellipse cx="20" cy="14" rx="3.5" ry="4"/><circle cx="12" cy="14" r="1.8" fill="currentColor"/><circle cx="20" cy="14" r="1.8" fill="currentColor"/><path d="M13 25 L16 29 L19 25"/><path d="M7 12 L5 8 L11 12"/><path d="M25 12 L27 8 L21 12"/></svg>`,
+  scroll:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="5" width="16" height="22" rx="2"/><circle cx="9" cy="5" r="3"/><circle cx="9" cy="27" r="3"/><line x1="12" y1="11" x2="22" y2="11"/><line x1="12" y1="15" x2="22" y2="15"/><line x1="12" y1="19" x2="18" y2="19"/></svg>`,
+  orb:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="16" cy="15" r="11"/><ellipse cx="16" cy="15" rx="5.5" ry="11"/><line x1="5" y1="15" x2="27" y2="15"/><circle cx="11" cy="9" r="2" fill="currentColor" opacity=".6"/></svg>`,
+  unicorn:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 26 Q6 22 8 16 Q10 10 16 10 Q22 10 24 16 Q26 22 24 26"/><path d="M16 6 L18 2 L20 6 L16 10"/><circle cx="11" cy="16" r="1.5" fill="currentColor"/><path d="M8 26 L6 30 M16 28 L16 32 M24 26 L26 30"/></svg>`,
+  spider:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="16" cy="19" r="5"/><ellipse cx="16" cy="11" rx="4" ry="5"/><line x1="3" y1="14" x2="11" y2="18"/><line x1="3" y1="18" x2="11" y2="20"/><line x1="3" y1="22" x2="11" y2="22"/><line x1="29" y1="14" x2="21" y2="18"/><line x1="29" y1="18" x2="21" y2="20"/><line x1="29" y1="22" x2="21" y2="22"/></svg>`,
+  wings:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M16 26 Q8 18 6 14 Q4 8 10 8 Q14 8 16 14 Q18 8 22 8 Q28 8 26 14 Q24 18 16 26Z"/><line x1="16" y1="14" x2="16" y2="26"/></svg>`,
+  moon:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 7 A11 11 0 1 0 21 25 A7.5 7.5 0 0 1 21 7Z" fill="currentColor" opacity=".5"/></svg>`,
+  trophy:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 4 H23 L21 18 Q19 26 16 26 Q13 26 11 18 Z"/><path d="M9 8 Q3 10 5 16 Q7 20 11 18"/><path d="M23 8 Q29 10 27 16 Q25 20 21 18"/><line x1="16" y1="26" x2="16" y2="28"/><line x1="11" y1="28" x2="21" y2="28"/></svg>`,
+  ball:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="16" cy="16" r="11"/><path d="M8 10 Q16 15 24 10"/><path d="M6 18 Q16 22 26 18"/><path d="M10 8 Q8 16 10 24 M22 8 Q24 16 22 24"/></svg>`,
+  snakeSm:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 26 C6 14 12 4 22 4 C28 4 30 10 30 16 C30 22 26 28 20 28 C14 28 12 22 14 18 C16 14 20 14 22 16"/><polygon points="22,11 27,17 20,17" fill="currentColor"/></svg>`,
+  bookLock:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="19" height="24" rx="2"/><line x1="4" y1="13" x2="23" y2="13"/><line x1="8" y1="18" x2="19" y2="18"/><line x1="8" y1="22" x2="15" y2="22"/><path d="M22 6 H28 L28 28 L22 28"/><circle cx="25" cy="18" r="2.5"/><line x1="25" y1="20.5" x2="25" y2="24"/></svg>`,
+  sword:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="16" y1="3" x2="16" y2="27"/><line x1="10" y1="20" x2="22" y2="20"/><path d="M14 27 Q16 31 18 27"/><circle cx="16" cy="10" r="2" fill="currentColor" opacity=".4"/></svg>`,
+  bird:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M16 28 Q9 20 7 13 Q7 6 13 7 Q16 9 16 12 Q16 9 19 7 Q25 6 25 13 Q23 20 16 28Z"/><path d="M9 5 Q5 1 7 0"/><path d="M23 5 Q27 1 25 0"/></svg>`,
+  bank:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="28" x2="29" y2="28"/><line x1="3" y1="12" x2="29" y2="12"/><line x1="7" y1="12" x2="7" y2="28"/><line x1="13" y1="12" x2="13" y2="28"/><line x1="19" y1="12" x2="19" y2="28"/><line x1="25" y1="12" x2="25" y2="28"/><path d="M3 12 L16 4 L29 12"/></svg>`,
+  wandTip:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="6" y1="26" x2="22" y2="10"/><circle cx="23" cy="9" r="3" fill="currentColor" opacity=".8"/><line x1="23" y1="5" x2="23" y2="3"/><line x1="27" y1="9" x2="29" y2="9"/><line x1="26" y1="6" x2="27.5" y2="4.5"/><line x1="23" y1="13" x2="23" y2="15"/></svg>`,
+  books:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="22" width="24" height="6" rx="1"/><rect x="6" y="14" width="20" height="8" rx="1"/><rect x="8" y="8" width="16" height="6" rx="1"/><line x1="8" y1="22" x2="8" y2="28"/><line x1="10" y1="14" x2="10" y2="22"/><line x1="12" y1="8" x2="12" y2="14"/></svg>`,
+  ghost:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 30 Q6 22 6 14 Q6 4 16 4 Q26 4 26 14 Q26 22 24 30 Q22 25 20 30 Q18 25 16 30 Q14 25 12 30 Q10 25 8 30Z"/><circle cx="12" cy="14" r="2.2" fill="currentColor"/><circle cx="20" cy="14" r="2.2" fill="currentColor"/></svg>`,
+  lock:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="8" y="14" width="16" height="14" rx="2"/><path d="M12 14 Q12 6 16 6 Q20 6 20 14"/><circle cx="16" cy="21" r="2.2"/><line x1="16" y1="23.2" x2="16" y2="25.5"/></svg>`,
+  stag:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M16 28 L10 22 L8 14 L12 10 L16 13 L20 10 L24 14 L22 22 Z"/><line x1="12" y1="10" x2="8" y2="6"/><line x1="10" y1="8" x2="6" y2="8"/><line x1="8" y1="6" x2="9" y2="3"/><line x1="20" y1="10" x2="24" y2="6"/><line x1="22" y1="8" x2="26" y2="8"/><line x1="24" y1="6" x2="23" y2="3"/></svg>`,
+  wave:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 11 Q7 7 11 11 Q15 15 19 11 Q23 7 29 11"/><path d="M3 19 Q7 15 11 19 Q15 23 19 19 Q23 15 29 19"/><path d="M7 26 Q11 22 15 26 Q19 30 23 26"/></svg>`,
+};
+
+// ══════════════════════════════════════════
+//  SCENES
+// ══════════════════════════════════════════
+const SCENES = [
+  { name:'Harry Potter', subtitle:'✦ The Wizarding World ✦', loc:'Hogwarts — Great Hall', heroKey:'lightning',
+    bg:'radial-gradient(ellipse at 50% 0%,#2a0050 0%,#0a0010 100%)',
+    accent:'#f0c040',aL:'#ffe080',aD:'#c8860a',glow:'rgba(240,192,64,.7)',muted:'#a080c0',tdim:'#b8a0c8',
+    cbg:'rgba(74,0,114,.28)',cbr:'rgba(240,192,64,.2)',csh:'rgba(240,192,64,.14)',
+    pc:['#ffe080','#f0c040','#c070ff','#80c0ff','#fff'],
+    bgT:'star',bgC:[255,240,200],bgN:180,bgS:.3,
+    spell:'Expecto Patronum',divG:'✧',
+    cards:[
+      {iK:'castle', t:'Hogwarts',          d:'魔法と魔術の学校。四つの寮が若き魔法使いたちを待ち受ける。'},
+      {iK:'owl',    t:'Magical Creatures', d:'フクロウ、ヒポグリフ、ドラゴン。魔法界の驚異の生き物たち。'},
+      {iK:'scroll', t:'Spells & Potions',  d:'Expelliarmus、Lumos、Accio。呪文と秘薬で世界を変えよう。'},
+      {iK:'orb',    t:'The Dark Arts',     d:'闇の魔術に対する防衛術。善と悪の間の永遠の戦い。'},
+    ], hint:'✦ CLICK TO ENTER THE FORBIDDEN FOREST ✦' },
+
+  { name:'Forbidden Forest', subtitle:'✦ Where Darkness Dwells ✦', loc:'The Forbidden Forest', heroKey:'forest',
+    bg:'radial-gradient(ellipse at 30% 100%,#001a0a 0%,#000510 60%,#000008 100%)',
+    accent:'#40c070',aL:'#80ff90',aD:'#208040',glow:'rgba(64,192,112,.6)',muted:'#608060',tdim:'#809878',
+    cbg:'rgba(0,40,10,.45)',cbr:'rgba(64,192,112,.2)',csh:'rgba(64,192,112,.1)',
+    pc:['#40ff70','#80ffa0','#20c050','#c0ffc0','#fff'],
+    bgT:'firefly',bgC:[80,220,120],bgN:120,bgS:.5,
+    spell:'Lumos Maxima',divG:'⋆',
+    cards:[
+      {iK:'unicorn', t:'Unicorns',    d:'神聖なユニコーン。その血は飲んだ者に呪いをもたらすという。'},
+      {iK:'spider',  t:'Aragog',      d:'巨大なアクロマンチュラ。ハグリッドが育てた蜘蛛の一族。'},
+      {iK:'wings',   t:'Thestrals',   d:'死を目撃した者にしか見えない翼を持つ黒馬。'},
+      {iK:'moon',    t:'Centaurs',    d:'ケンタウルスたちは星を読み、未来を知る古代の生き物。'},
+    ], hint:'✦ CLICK TO FLY TO THE QUIDDITCH PITCH ✦' },
+
+  { name:'Quidditch', subtitle:'✦ The Greatest Game ✦', loc:'Hogwarts Quidditch Pitch', heroKey:'broom',
+    bg:'linear-gradient(180deg,#000820 0%,#001040 45%,#000820 100%)',
+    accent:'#4090ff',aL:'#80c0ff',aD:'#1050c0',glow:'rgba(64,144,255,.7)',muted:'#6080a0',tdim:'#8090b0',
+    cbg:'rgba(0,20,60,.45)',cbr:'rgba(64,144,255,.2)',csh:'rgba(64,144,255,.15)',
+    pc:['#80c0ff','#4090ff','#ffd700','#fff','#c0e0ff'],
+    bgT:'streak',bgC:[80,160,255],bgN:90,bgS:2.0,
+    spell:'Wingardium Leviosa',divG:'✦',
+    cards:[
+      {iK:'trophy', t:'Golden Snitch',  d:'ゴールデンスニッチを捕まえた者が勝利。その小さな翼が試合の命運を握る。'},
+      {iK:'ball',   t:'Bludger',        d:'ビーターが打つブラッジャーは選手を狙う鉄の球。常に危険が伴う。'},
+      {iK:'ball',   t:'Quaffle',        d:'チェイサーがゴールに投げ込むクアッフル。10点ずつ得点を重ねる。'},
+      {iK:'broom',  t:'Nimbus 2000',    d:'ハリーが一年生で乗ったニンバス2000。当時最速の箒。'},
+    ], hint:'✦ CLICK TO DESCEND INTO THE CHAMBER ✦' },
+
+  { name:'Chamber of Secrets', subtitle:'✦ The Heir of Slytherin ✦', loc:'Chamber of Secrets', heroKey:'serpent',
+    bg:'radial-gradient(ellipse at 50% 80%,#001a08 0%,#000a00 50%,#000005 100%)',
+    accent:'#90c040',aL:'#c0ff60',aD:'#508020',glow:'rgba(144,192,64,.6)',muted:'#607040',tdim:'#708050',
+    cbg:'rgba(0,30,0,.55)',cbr:'rgba(144,192,64,.2)',csh:'rgba(144,192,64,.1)',
+    pc:['#90ff40','#c0ff60','#40c020','#80ff80','#ffff80'],
+    bgT:'mist',bgC:[80,180,40],bgN:100,bgS:.15,
+    spell:'Parseltongue',divG:'⚯',
+    cards:[
+      {iK:'snakeSm',  t:'Basilisk',     d:'バジリスクの視線は死をもたらす。ハリーは鏡越しにその目を避けた。'},
+      {iK:'bookLock', t:"Tom's Diary",  d:'トム・リドルの日記。ヴォルデモートの秘密が刻まれた魂の破片。'},
+      {iK:'sword',    t:'Sword of Gryffindor', d:'グリフィンドールの剣。価値あるものだけを取り込む伝説の剣。'},
+      {iK:'bird',     t:'Fawkes',       d:'ダンブルドアの不死鳥。涙は癒やしをもたらし、炎から再生する。'},
+    ], hint:'✦ CLICK TO REACH DIAGON ALLEY ✦' },
+
+  { name:'Diagon Alley', subtitle:'✦ A World of Wonders ✦', loc:'London — Diagon Alley', heroKey:'lantern',
+    bg:'radial-gradient(ellipse at 30% 50%,#2a1000 0%,#180800 55%,#080200 100%)',
+    accent:'#ff8040',aL:'#ffb060',aD:'#c04010',glow:'rgba(255,128,64,.65)',muted:'#907050',tdim:'#a08060',
+    cbg:'rgba(60,20,0,.45)',cbr:'rgba(255,128,64,.2)',csh:'rgba(255,128,64,.15)',
+    pc:['#ffb060','#ff8040','#ffd700','#ff6020','#fff'],
+    bgT:'ember',bgC:[255,140,60],bgN:140,bgS:.8,
+    spell:'Alohomora',divG:'★',
+    cards:[
+      {iK:'bank',    t:'Gringotts',          d:'ゴブリンが管理する魔法銀行。地下深くに張り巡らされた金庫の迷宮。'},
+      {iK:'wandTip', t:"Ollivander's",       d:'オリバンダー氏の杖店。杖が魔法使いを選ぶのだ。'},
+      {iK:'books',   t:'Flourish & Blotts',  d:'魔法書専門書店。あらゆる魔法の書物が溢れる不思議な空間。'},
+      {iK:'owl',     t:'Eeylops',            d:'イーロップスフクロウ・エンポリアム。様々なフクロウが売られる店。'},
+    ], hint:'✦ CLICK TO ENTER THE DARKNESS OF AZKABAN ✦' },
+
+  { name:'Azkaban', subtitle:"✦ The Dementor's Prison ✦", loc:'North Sea — Azkaban', heroKey:'chains',
+    bg:'radial-gradient(ellipse at 50% 0%,#001428 0%,#000510 55%,#000005 100%)',
+    accent:'#60a0c0',aL:'#90d0f0',aD:'#204060',glow:'rgba(96,160,192,.55)',muted:'#406080',tdim:'#507090',
+    cbg:'rgba(0,10,30,.55)',cbr:'rgba(96,160,192,.15)',csh:'rgba(96,160,192,.1)',
+    pc:['#90d0f0','#60a0c0','#c0e8ff','#fff','#a0c8e0'],
+    bgT:'ice',bgC:[80,140,180],bgN:100,bgS:.2,
+    spell:"Dementor's Kiss",divG:'✧',
+    cards:[
+      {iK:'ghost', t:'Dementors',        d:'幸福を吸い取るディメンター。その存在だけで周囲を絶望に包む。'},
+      {iK:'lock',  t:'Sirius Black',     d:'無実の罪でアズカバンに12年。ハリーの名付け親シリウス・ブラック。'},
+      {iK:'stag',  t:'Patronus Charm',   d:'パトローナス・チャーム。幸福な記憶から生まれる守護霊が闇を払う。'},
+      {iK:'wave',  t:'Soul Destruction', d:'ディメンターのキス。魂を吸い取り、生ける屍にしてしまう最悪の刑罰。'},
+    ], hint:'✦ CLICK TO RETURN TO HOGWARTS ✦' },
+];
+
+// ══════════════════════════════════════════
+//  STATE & THEME
+// ══════════════════════════════════════════
+let idx = 0, busy = false;
+
+function theme(s) {
+  const r = document.documentElement.style;
+  r.setProperty('--accent',s.accent); r.setProperty('--accent-light',s.aL);
+  r.setProperty('--accent-dark',s.aD); r.setProperty('--glow',s.glow);
+  r.setProperty('--muted',s.muted); r.setProperty('--text-dim',s.tdim);
+  r.setProperty('--card-bg',s.cbg); r.setProperty('--card-border',s.cbr);
+  r.setProperty('--card-shadow',s.csh);
+}
+
+// ══════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════
+function render(i, stagger) {
+  const s = SCENES[i];
+  document.getElementById('main').innerHTML = `
+    <span class="s-icon">${IC[s.heroKey]}</span>
+    <h1>${s.name}</h1>
+    <p class="s-loc">— ${s.loc} —</p>
+    <p class="subtitle">${s.subtitle}</p>
+    <div class="div"><div class="div-line"></div><span class="div-gem">${s.divG}</span><div class="div-line"></div></div>
+    <div class="cards">${s.cards.map(c=>`<div class="card"><span class="card-icon">${IC[c.iK]}</span><h3>${c.t}</h3><p>${c.d}</p></div>`).join('')}</div>
+    <div class="spell-box"><p class="spell-label">✦ Incantation ✦</p><p class="spell-text">${s.spell}</p></div>
+    <div class="div"><div class="div-line"></div><span class="div-gem">${s.divG}</span><div class="div-line"></div></div>
+    <p class="hint">${s.hint}</p>
+    <footer>✦ &nbsp; Hogwarts School of Witchcraft and Wizardry &nbsp; ✦ &nbsp; Est. 990 A.D. &nbsp; ✦</footer>
+  `;
+  const m = document.getElementById('main');
+  if (stagger) { m.classList.remove('out'); m.classList.add('in'); setTimeout(()=>m.classList.remove('in'),1400); }
+}
+
+// ══════════════════════════════════════════
+//  NAV
+// ══════════════════════════════════════════
+function renderNav() {
+  document.getElementById('nav').innerHTML = SCENES.map((s,i)=>
+    `<div class="nd ${i===idx?'on':''}" data-i="${i}"><span class="nd-lbl">${s.loc}</span></div>`).join('');
+}
+function updateNav() {
+  document.querySelectorAll('.nd').forEach((d,i)=>d.classList.toggle('on',i===idx));
+  document.getElementById('ctr').textContent =
+    `${String(idx+1).padStart(2,'0')} / ${String(SCENES.length).padStart(2,'0')}  —  ${SCENES[idx].loc.toUpperCase()}`;
+}
+
+// ══════════════════════════════════════════
+//  TRANSITION
+// ══════════════════════════════════════════
+function go(ni, cx, cy) {
+  if (busy || ni===idx) return;
+  busy = true;
+  const ns = SCENES[ni];
+  const tov = document.getElementById('tov');
+  const m   = document.getElementById('main');
+  const xp  = (cx/innerWidth*100).toFixed(1)+'%';
+  const yp  = (cy/innerHeight*100).toFixed(1)+'%';
+
+  // energy flash + portal ring at click
+  const ef = document.createElement('div'); ef.className='eflash';
+  ef.style.cssText=`left:${cx}px;top:${cy}px;width:28px;height:28px;background:radial-gradient(circle,white,${ns.aL},transparent)`;
+  document.body.appendChild(ef); setTimeout(()=>ef.remove(),520);
+
+  const pr = document.createElement('div'); pr.className='pring';
+  pr.style.cssText=`left:${cx}px;top:${cy}px;width:80px;height:80px;border:2.5px solid ${ns.accent};box-shadow:0 0 20px ${ns.accent},inset 0 0 20px ${ns.accent}`;
+  document.body.appendChild(pr); setTimeout(()=>pr.remove(),950);
+
+  tov.style.background=ns.bg; tov.style.transition='none';
+  tov.style.clipPath=`circle(0% at ${xp} ${yp})`; tov.getBoundingClientRect();
+  m.classList.add('out');
+
+  requestAnimationFrame(()=>{
+    tov.style.transition='clip-path .88s cubic-bezier(.4,0,.2,1)';
+    tov.style.clipPath=`circle(200% at ${xp} ${yp})`;
+  });
+
+  setTimeout(()=>{
+    idx=ni; theme(ns); document.body.style.background=ns.bg;
+    render(idx,true); updateNav(); rebuildBg();
+    m.classList.remove('out');
+  },470);
+
+  setTimeout(()=>{
+    tov.style.transition='clip-path .38s ease-in';
+    tov.style.clipPath=`circle(0% at ${xp} ${yp})`;
+    setTimeout(()=>{ tov.style.transition='none'; tov.style.clipPath='circle(0% at 50% 50%)'; busy=false; },390);
+  },940);
+}
+
+// ══════════════════════════════════════════
+//  BACKGROUND CANVAS
+// ══════════════════════════════════════════
+const C = document.getElementById('bg-canvas');
+const X = C.getContext('2d');
+let BP=[], BCfg=null;
+
+function rz() { C.width=innerWidth; C.height=innerHeight; }
+
+function mk(c) {
+  const [r,g,b]=c.color, t=c.type;
+  return { x:Math.random()*C.width, y:Math.random()*C.height, r:Math.random()*1.8+.3,
+    vx:(Math.random()-.5)*c.speed*.35,
+    vy:t==='streak'?-(Math.random()*3+1.5):t==='firefly'?-(Math.random()*.3+.08):t==='ember'?-(Math.random()*.5+.15):t==='mist'?-(Math.random()*.12+.03):t==='ice'?(Math.random()*.1-.05):c.speed,
+    ph:Math.random()*Math.PI*2, dp:.012+Math.random()*.025,
+    cr:r,cg:g,cb:b, trail:t==='streak'?[]:null, sz:t==='streak'?1+Math.random()*2:Math.random()*1.8+.3 };
+}
+
+function rebuildBg() {
+  const s=SCENES[idx]; BCfg={type:s.bgT,color:s.bgC,count:s.bgN,speed:s.bgS};
+  BP=Array.from({length:BCfg.count},()=>mk(BCfg));
+}
+
+function drawBg() {
+  X.clearRect(0,0,C.width,C.height);
+  if (!BCfg) { requestAnimationFrame(drawBg); return; }
+  const t=BCfg.type;
+  BP.forEach(p=>{
+    p.ph+=p.dp; const a=.3+.7*((Math.sin(p.ph)+1)/2);
+    if(t==='star'){
+      X.beginPath(); X.arc(p.x,p.y,p.r,0,Math.PI*2);
+      X.fillStyle=`rgba(${p.cr},${p.cg},${p.cb},${a})`; X.fill();
+      p.y+=p.vy; if(p.y>C.height){p.y=0;p.x=Math.random()*C.width;}
+    } else if(t==='firefly'){
+      p.vx+=(Math.random()-.5)*.06; p.vx=Math.max(-.6,Math.min(.6,p.vx)); p.x+=p.vx; p.y+=p.vy;
+      X.beginPath(); X.arc(p.x,p.y,p.r*1.5,0,Math.PI*2);
+      X.fillStyle=`rgba(${p.cr},${p.cg},${p.cb},${a*.85})`; X.fill();
+      const g=X.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*7);
+      g.addColorStop(0,`rgba(${p.cr},${p.cg},${p.cb},${a*.28})`); g.addColorStop(1,'rgba(0,0,0,0)');
+      X.beginPath(); X.arc(p.x,p.y,p.r*7,0,Math.PI*2); X.fillStyle=g; X.fill();
+      if(p.y<-12||p.x<-12||p.x>C.width+12){Object.assign(p,mk(BCfg));p.y=C.height+12;}
+    } else if(t==='streak'){
+      p.trail.push({x:p.x,y:p.y}); if(p.trail.length>9)p.trail.shift();
+      p.trail.forEach((pt,ti)=>{ X.beginPath(); X.arc(pt.x,pt.y,p.sz*.5,0,Math.PI*2); X.fillStyle=`rgba(${p.cr},${p.cg},${p.cb},${ti/p.trail.length*.6})`; X.fill(); });
+      p.x+=p.vx; p.y+=p.vy; if(p.y<-20){Object.assign(p,mk(BCfg));p.y=C.height+10;}
+    } else if(t==='ember'){
+      p.x+=p.vx+Math.sin(p.ph*.4)*.4; p.y+=p.vy;
+      X.beginPath(); X.arc(p.x,p.y,p.r,0,Math.PI*2); X.fillStyle=`rgba(${p.cr},${p.cg},${p.cb},${a})`; X.fill();
+      if(p.y<-12){Object.assign(p,mk(BCfg));p.y=C.height+12;}
+    } else if(t==='mist'){
+      p.x+=Math.sin(p.ph*.4)*.22; p.y+=p.vy;
+      const g=X.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*22);
+      g.addColorStop(0,`rgba(${p.cr},${p.cg},${p.cb},${a*.13})`); g.addColorStop(1,'rgba(0,0,0,0)');
+      X.beginPath(); X.arc(p.x,p.y,p.r*22,0,Math.PI*2); X.fillStyle=g; X.fill();
+      if(p.y<-60){Object.assign(p,mk(BCfg));p.y=C.height+60;}
+    } else if(t==='ice'){
+      p.x+=Math.sin(p.ph*.3)*.18; p.y+=p.vy+(Math.random()-.5)*.05;
+      X.save(); X.translate(p.x,p.y); X.rotate(p.ph*.12);
+      X.beginPath(); X.moveTo(0,-p.r*3); X.lineTo(p.r,0); X.lineTo(0,p.r*3); X.lineTo(-p.r,0); X.closePath();
+      X.fillStyle=`rgba(${p.cr},${p.cg},${p.cb},${a*.55})`; X.fill(); X.restore();
+      if(p.y<-20||p.y>C.height+20){Object.assign(p,mk(BCfg));p.y=C.height+20;}
+    }
+  });
+  requestAnimationFrame(drawBg);
+}
+
+// ══════════════════════════════════════════
+//  CLICK PARTICLES
+// ══════════════════════════════════════════
+const SPELLS=['Expecto Patronum','Lumos','Accio','Stupefy','Alohomora','Riddikulus','Nox','Incendio','Finite'];
+
+function burst(x,y) {
+  const s=SCENES[idx], cols=s.pc, n=22+Math.floor(Math.random()*14);
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div'); el.className='particle';
+    const ang=(Math.PI*2*i)/n+Math.random()*.5, dist=50+Math.random()*110;
+    const sz=3+Math.random()*7, d=.5+Math.random()*.75, col=cols[i%cols.length];
+    el.style.cssText=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${col};box-shadow:0 0 ${sz*2}px ${col};--x:${Math.cos(ang)*dist}px;--y:${Math.sin(ang)*dist}px;--d:${d}s;`;
+    document.body.appendChild(el); setTimeout(()=>el.remove(),d*1000+100);
+  }
+  [58,106,165].forEach((sz,i)=>{
+    const r=document.createElement('div'); r.className='mring';
+    const c=cols[i%cols.length];
+    r.style.cssText=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;border:2px solid ${c};box-shadow:0 0 14px ${c};--d:${.58+i*.13}s;animation-delay:${i*.07}s;`;
+    document.body.appendChild(r); setTimeout(()=>r.remove(),950);
+  });
+  const sf=document.createElement('div'); sf.className='sfloat';
+  sf.textContent=SPELLS[Math.floor(Math.random()*SPELLS.length)];
+  sf.style.cssText=`left:${x}px;top:${y}px;color:${s.aL};text-shadow:0 0 16px ${s.glow};`;
+  document.body.appendChild(sf); setTimeout(()=>sf.remove(),1350);
+  const em=['✦','✧','⋆','★','✨','💫','⚡','🌟'];
+  for(let i=0;i<7;i++){
+    const sp=document.createElement('div'); sp.className='spark';
+    const d=.55+Math.random()*.65;
+    sp.style.cssText=`left:${x}px;top:${y}px;font-size:${13+Math.random()*14}px;--x:${(Math.random()-.5)*190}px;--y:${-35-Math.random()*110}px;--d:${d}s;`;
+    sp.textContent=em[Math.floor(Math.random()*em.length)];
+    document.body.appendChild(sp); setTimeout(()=>sp.remove(),d*1000+100);
+  }
+}
+
+// ══════════════════════════════════════════
+//  INTRO ANIMATION
+// ══════════════════════════════════════════
+function intro() {
+  const ov=document.getElementById('intro');
+  // Shoot particles from center on reveal
+  setTimeout(()=>{
+    const cx=innerWidth/2, cy=innerHeight/2;
+    for(let i=0;i<36;i++){
+      const el=document.createElement('div'); el.className='particle';
+      const ang=(Math.PI*2*i)/36, dist=80+Math.random()*200;
+      const sz=3+Math.random()*8, d=.6+Math.random()*1, col=SCENES[0].pc[i%SCENES[0].pc.length];
+      el.style.cssText=`left:${cx}px;top:${cy}px;width:${sz}px;height:${sz}px;background:${col};box-shadow:0 0 ${sz*2}px ${col};--x:${Math.cos(ang)*dist}px;--y:${Math.sin(ang)*dist}px;--d:${d}s;`;
+      document.body.appendChild(el); setTimeout(()=>el.remove(),d*1000+100);
+    }
+  },600);
+  setTimeout(()=>{ ov.classList.add('done'); },1700);
+  // stagger-in for initial content
+  setTimeout(()=>{
+    const m=document.getElementById('main');
+    m.classList.add('in'); setTimeout(()=>m.classList.remove('in'),1400);
+  },1500);
+}
+
+// ══════════════════════════════════════════
+//  CURSOR
+// ══════════════════════════════════════════
+const cur=document.getElementById('cursor');
+document.addEventListener('mousemove',e=>{ cur.style.left=e.clientX+'px'; cur.style.top=e.clientY+'px'; });
+
+// ══════════════════════════════════════════
+//  CLICK HANDLER
+// ══════════════════════════════════════════
+document.addEventListener('click',e=>{
+  const dot=e.target.closest('.nd');
+  if(dot){ const i=parseInt(dot.dataset.i); burst(e.clientX,e.clientY); setTimeout(()=>go(i,e.clientX,e.clientY),320); return; }
+  burst(e.clientX,e.clientY);
+  cur.style.transform='translate(-4px,-28px) rotate(-20deg) scale(1.5)';
+  setTimeout(()=>{ cur.style.transform='translate(-4px,-28px) rotate(-20deg) scale(1)'; },200);
+  if(!busy){ const ni=(idx+1)%SCENES.length; setTimeout(()=>go(ni,e.clientX,e.clientY),320); }
+});
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+window.addEventListener('resize',rz); rz();
+const s0=SCENES[0]; theme(s0); document.body.style.background=s0.bg;
+render(0,false); renderNav(); updateNav(); rebuildBg(); requestAnimationFrame(drawBg);
+intro();
+</script>
+</body>
+</html>
